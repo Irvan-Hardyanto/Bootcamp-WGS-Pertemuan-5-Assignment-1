@@ -57,7 +57,7 @@
                                     <td><%= contact.name %></td>
                                     <td><%= contact.email %></td>
                                     <td><%= contact.mobile %></td>
-                                    <td><button type="button" class="btn btn-primary">Update</button> <button type="button" class="btn btn-danger">Delete</button></td>
+                                    <td><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalUpdateContact">Update</button> <button type="button" class="btn btn-danger">Delete</button></td>
                                   </tr>
                             <% }) %>
                         </tbody>
@@ -99,6 +99,40 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="button" class="btn btn-primary">Add contact</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="modalUpdateContact" tabindex="-1" aria-labelledby="modalUpdateContact" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="headerUpdateContact">Update Contact</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label for="oldName" class="form-label">Name</label>
+              <input type="text" class="form-control" id="oldName" aria-describedby="nameHelp" name="oldName" disabled>
+            </div>
+            <div class="mb-3">
+              <label for="newName" class="form-label">New Name</label>
+              <input type="text" class="form-control" id="newName" aria-describedby="nameHelp" name="newName">
+            </div>
+            <div class="mb-3">
+              <label for="newMobile" class="form-label">New Mobile Number</label>
+              <input type="text" class="form-control" id="newMobile" aria-describedby="nameHelp" name="newMobile">
+            </div>
+            <div class="mb-3">
+              <label for="newEmail" class="form-label">New Email Address</label>
+              <input type="email" class="form-control" id="newEmail" aria-describedby="nameHelp" name="newEmail">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary">Update contact</button>
         </div>
       </div>
     </div>
