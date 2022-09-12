@@ -3,6 +3,7 @@ const express=require('express');
 const fs=require('fs'); 
 const validator = require('validator');
 const url = require('url');
+const { body, validationResult } = require('express-validator');
 
 //inisialisasi objek express.js
 const app= express();
@@ -11,6 +12,7 @@ const port = 3000;//port number
 //direktori dan nama file kontak.
 const dirPath='data';//bisa diimprove lebih lanjut
 const dataPath='data/contacts.json';//bisa diimprove lebih lanjut
+
 
 //periksa apakah folder 'data' sudah dibuat
 if(!fs.existsSync(dirPath)){
@@ -59,26 +61,37 @@ const saveContact=(contacts)=>{
 const addContact=(newContact)=>{
     //chalenge: kalo email sama mobile nya salah, tampilkan kedua pesan error nya.
     //Selama ini kan salah satu doang.
-    if(!validator.isMobilePhone(newContact.mobile,'id-ID')){//validasi nomor telepon
-        console.log("wrong phone number format!");
-        //rl.close();
-        return;// di return supaya ketika nomor telfon nya salah, tidak dimasukkan ke contacts
+    if(!newContact.name){
+        console.log('Please insert your name!');
+        return false;
+    }
+    if(newContact.mobile){
+        if(!validator.isMobilePhone(newContact.mobile,'id-ID')){//validasi nomor telepon
+            console.log("wrong phone number format!");
+            return false;// di return supaya ketika nomor telfon nya salah, tidak dimasukkan ke contacts
+        }
+    }else{
+        console.log('Please insert your mobile phone number!');
+        return false;
     }
     if(newContact.email){//email tidak wajib diisi, jadi harus diperiksa dulu udah diisi atau belum
         if(!validator.isEmail(newContact.email)){//validasi email
             console.log("wrong email format!");
-            //rl.close();
-            return;// di return supaya ketika email nya salah, tidak dimasukkan ke contacts
+            return false;// di return supaya ketika email nya salah, tidak dimasukkan ke contacts
         }
+    }else{
+        console.log('Please insert your email address!');
+        return false;
     }
     const contacts = loadContact();
     let duplicate = contacts.find(contact=>{return contact.name===newContact.name});
         if(duplicate){
-            console.log('Contact already recorded!');
+            console.log('This name is already used!');
             return false;
         }
         contacts.push(newContact);//tambahkan nama,nomor telepon, dan email yang baru saja dibaca dari cmd
         saveContact(contacts);
+    return true;
 }
 
 //fungsi untuk mencari kontak dengan nama tertentu
@@ -113,7 +126,7 @@ const updateContact=(contactData)=>{
         if(contactData.newMobile){//nomor telepon tidak wajib diisi, jadi harus diperiksa dulu udah diisi atau belum
             if(!validator.isMobilePhone(contactData.newMobile,'id-ID')){//periksa nomor telepon yang dimasukkan
                 console.log("wrong phone number format!");
-                return;// di return supaya ketika nomor telfon nya salah, tidak dimasukkan ke contacts
+                return false;// di return supaya ketika nomor telfon nya salah, tidak dimasukkan ke contacts
             }
         }
 
@@ -121,7 +134,7 @@ const updateContact=(contactData)=>{
         if(contactData.newEmail){//email tidak wajib diisi, jadi harus diperiksa dulu udah diisi atau belum
             if(!validator.isEmail(contactData.newEmail)){//periksa nomor email yang dimasukkan
                 console.log("wrong email format!");
-                return;// di return supaya ketika email nya salah, tidak dimasukkan ke contacts
+                return false;// di return supaya ketika email nya salah, tidak dimasukkan ke contacts
             }
         }
 
@@ -143,6 +156,7 @@ const updateContact=(contactData)=>{
         }
 
         saveContact(contacts);
+        return true;
     }
 }
 
@@ -162,35 +176,65 @@ const deleteContact=(name)=>{
 
     fs.writeFileSync(dataPath,JSON.stringify(contacts));//tulis data kontak yang baru ke dalam berkas .json
     console.log(`Contact ${name} has been deleted!`);//kirimkan pesan konfirmasi ke pengguna
+    return true;
 }
 
 //route ke halaman contact
 app.get('/contact',(req,res)=>{
+    let successMessage="";
     const contacts = loadContact();
     // console.log(contacts);
     // loadContactAsync().then(contacts=>console.log(contacts));
-    res.render(__dirname+'/views/contact.ejs',{contacts});
+    res.render(__dirname+'/views/contact.ejs',{contacts,successMessage});
 })
 
 //route yang dipanggil ketika menambahkan kontak baru
 //POST tidak mengirimkan parameter melalui URL!!
-app.post('/addContact',(req,res)=>{
-    addContact(req.body);
+app.post('/addContact',body('email').isEmail(),body('mobile').isMobilePhone('id-ID'),(req,res)=>{
     const contacts = loadContact();
-    res.render(__dirname+'/views/contact.ejs',{contacts});
+    //validasi sebelum add contact
+    // const errorMessages = validationResult(req).array();
+    // if(errorMessages.length>0){
+    //     res.render(__dirname+'/views/contact.ejs',{contacts,errorMessages});
+    // }
+    const success=addContact(req.body);
+    
+    let successMessage="";
+    if(success){
+        successMessage="Contact has been successfully added!"
+    }
+    res.render(__dirname+'/views/contact.ejs',{contacts,successMessage});
 })
 
+//validasi mobile dan email menggunakan express-validator
+// app.post('/addContact',body('email').isEmail(),body('mobile').isMobilePhone('id-ID'),(req,res)=>{
+//     const errorMessages = validationResult(req).array();
+//     const contacts = loadContact();
+//     if(errorMessages.length>0){
+//         res.render(__dirname+'/views/contact.ejs',{contacts,errorMessages});
+//     }
+// })
+
 app.post('/updateContact',(req,res)=>{
-    updateContact(req.body);
+    const success=updateContact(req.body);
     const contacts = loadContact();
-    res.render(__dirname+'/views/contact.ejs',{contacts});
+    let successMessage="";
+    if(success){
+        successMessage="Contact has been successfully updated!"
+    }
+    res.render(__dirname+'/views/contact.ejs',{contacts,successMessage});
 })
 
 app.get('/deleteContact/',(req,res)=>{
-    //kueri nama perlu diparse menggunakan module url karena karakter spasi diganti menjadi %20
-    deleteContact(url.parse(req.url, true).query.name);
+    //kueri nama perlu di=parse menggunakan module url karena karakter spasi diganti menjadi %20
+    //penjelasan lengkap: https://stackoverflow.com/a/8590367
+    const success=deleteContact(url.parse(req.url, true).query.name);
     const contacts = loadContact();
-    res.render(__dirname+'/views/contact.ejs',{contacts});
+    let successMessage="";
+    if(success){
+        successMessage="Contact has been deleted!"
+    }
+    res.render(__dirname+'/views/contact.ejs',{contacts,successMessage});
 })
 
 //jika akses selain route selain yang disediakan diatas, tampilkan error 404

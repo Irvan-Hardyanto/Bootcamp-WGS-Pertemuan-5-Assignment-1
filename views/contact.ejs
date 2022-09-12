@@ -34,6 +34,11 @@
         <div class="container">
             <div class="row">
                 <div class="col">
+                  <% if (successMessage.length>0) { %>
+                    <div class="alert alert-success" role="alert">
+                      <%= successMessage  %> 
+                  </div>
+                  <% } %>
                     <% if (contacts.length < 1) { %>
                         <div class="alert alert-danger" role="alert">
                             Contacts is empty!
