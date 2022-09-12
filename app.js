@@ -2,6 +2,7 @@
 const express=require('express');
 const fs=require('fs'); 
 const validator = require('validator');
+const url = require('url');
 
 //inisialisasi objek express.js
 const app= express();
@@ -95,14 +96,60 @@ const getContact=(contacts,name)=>{
     return found;
 }
 
-const updateContact=(oldName,newName,newMobile,newEmail)=>{
-    
+const updateContact=(contactData)=>{
+    let contacts = loadContact();
+    const oldContact = getContact(contacts,contactData.oldName);
+
+    if(!oldContact){//jika kontak yang akan dihapus tidak ditemukan
+        console.log("Contact not found!");//tampilkan pesan kesalahan
+        return false;
+    }else{
+        if(!contactData.newName && !contactData.newMobile && !contactData.newEmail){//jika pengguna tidak memasukkan nama / mobile/email baru...
+            console.log('Please enter new name or new mobile or new email.');//tampilkan pesan kesalahan
+            return false;
+        }
+
+        //validasi nomor telepon baru
+        if(contactData.newMobile){//nomor telepon tidak wajib diisi, jadi harus diperiksa dulu udah diisi atau belum
+            if(!validator.isMobilePhone(contactData.newMobile,'id-ID')){//periksa nomor telepon yang dimasukkan
+                console.log("wrong phone number format!");
+                return;// di return supaya ketika nomor telfon nya salah, tidak dimasukkan ke contacts
+            }
+        }
+
+        //validasi email baru
+        if(contactData.newEmail){//email tidak wajib diisi, jadi harus diperiksa dulu udah diisi atau belum
+            if(!validator.isEmail(contactData.newEmail)){//periksa nomor email yang dimasukkan
+                console.log("wrong email format!");
+                return;// di return supaya ketika email nya salah, tidak dimasukkan ke contacts
+            }
+        }
+
+        //periksa informasi mana saja yang ingin diubah.
+        if(contactData.newName){//jika pengguna memasukkan nama baru, maka perbarui nama nya
+            // if(newName==oldContact.name){
+            //     console.log('new name is same with old name');
+            //     return false;
+            // }
+            oldContact.name=contactData.newName;
+        }
+
+        if(contactData.newMobile){//jika pengguna memasukkan nomor mobile baru, maka perbarui nomor mobile nya
+            oldContact.mobile=contactData.newMobile;
+        }
+
+        if(contactData.newEmail){//jika pengguna memasukkan nomor email baru, maka perbarui email nya
+            oldContact.email=contactData.newEmail;
+        }
+
+        saveContact(contacts);
+    }
 }
 
 const deleteContact=(name)=>{
     let contacts = loadContact();//baca seluruh kontak yang tersimpan di file contacts.json
     const found = getContact(contacts,name);//cari kontak yang ingin dihapus
-    
+    console.log(name);
     if(!found){//jika kontak yang akan dihapus tidak ditemukan
         console.log("Contact not found!");//bisa ganti jadi throw.
         return false;
@@ -127,8 +174,21 @@ app.get('/contact',(req,res)=>{
 
 //route yang dipanggil ketika menambahkan kontak baru
 //POST tidak mengirimkan parameter melalui URL!!
-app.post('/updateContact',(req,res)=>{
+app.post('/addContact',(req,res)=>{
     addContact(req.body);
+    const contacts = loadContact();
+    res.render(__dirname+'/views/contact.ejs',{contacts});
+})
+
+app.post('/updateContact',(req,res)=>{
+    updateContact(req.body);
+    const contacts = loadContact();
+    res.render(__dirname+'/views/contact.ejs',{contacts});
+})
+
+app.get('/deleteContact/',(req,res)=>{
+    //kueri nama perlu diparse menggunakan module url karena karakter spasi diganti menjadi %20
+    deleteContact(url.parse(req.url, true).query.name);
     const contacts = loadContact();
     res.render(__dirname+'/views/contact.ejs',{contacts});
 })
