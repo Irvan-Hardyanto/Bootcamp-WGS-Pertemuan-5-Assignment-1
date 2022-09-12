@@ -40,14 +40,18 @@ const loadContact=()=>{
         })
     })
 }
-app.get('/',(req,res)=>{
-
-})
-
+//route ke halaman contact
 app.get('/contact',(req,res)=>{
     loadContact().then(contacts=>{
         res.render(__dirname+'/views/contact.ejs',{contacts});
     });
+})
+
+//jika akses selain route selain yang disediakan diatas, tampilkan error 404
+app.use('/',(req,res)=>{//todo: cari cara buat nampilin html 404 not found.
+    res.writeHead(404);//buat status code
+    res.write('Error: page not found');
+    res.end();
 })
 
 app.listen(port,()=>{
