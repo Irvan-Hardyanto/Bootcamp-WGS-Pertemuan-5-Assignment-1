@@ -78,7 +78,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form>
+          <form action="/updateContact" method="POST">
             <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
                 <input type="text" class="form-control" id="name" aria-describedby="nameHelp" name="name">
@@ -94,11 +94,14 @@
               <input type="email" class="form-control" id="email" aria-describedby="mobileHelp" name="email">
               <div id="emailHelp" class="form-text">Your email address</div>
             </div>
+            <div>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              
+              <!--https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form-->
+              <input class="btn btn-primary" type="submit" value="Add Contact">
+              <!-- <button type="button" class="btn btn-primary" type="submit" name="contact" value="Add Contact"></button> -->
+            </div>
           </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary">Add contact</button>
         </div>
       </div>
     </div>
