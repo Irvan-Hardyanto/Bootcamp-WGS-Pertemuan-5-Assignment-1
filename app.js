@@ -55,15 +55,18 @@ const loadContactAsync = () => {
     });
 }
 
+//fungsi untuk menyimpan kontak ke berkas.json
 const saveContact = (contacts) => {
     fs.writeFileSync(dataPath, JSON.stringify(contacts));//tulis data yang baru ke dalam berkas .json
     console.log('Terimakasih sudah memasukkan data!');
 }
 
+//fungsi untuk memeriksa apakah sebuah kontak sudah pernah dibuat sebelumnya
 const isDuplicate = (contacts, name) => {
     return contacts.find(contact => { return contact.name === name });
 }
 
+//fungsi untuk menambah kontak baru
 const addContact = (contacts, newContact) => {
     contacts.push(newContact);//tambahkan nama,nomor telepon, dan email yang baru saja dibaca dari cmd
     saveContact(contacts);
@@ -85,6 +88,7 @@ const getContact = (contacts, name) => {
     return found;
 }
 
+//fungsi untuk memperbarui kontak
 const updateContact = (contacts, contactData) => {
     const oldContact = getContact(contacts, contactData.oldName);
     if (!oldContact) {//jika kontak yang akan dihapus tidak ditemukan
@@ -113,6 +117,7 @@ const updateContact = (contacts, contactData) => {
     }
 }
 
+//fungsi untuk menghapus kontak
 const deleteContact = (contacts, name) => {//baca seluruh kontak yang tersimpan di file contacts.json
     const found = getContact(contacts, name);//cari kontak yang ingin dihapus
     console.log(name);
@@ -143,6 +148,7 @@ app.get('/contact', (req, res) => {
 //route yang dipanggil ketika menambahkan kontak baru
 //POST tidak mengirimkan parameter melalui URL!!
 
+//validator untuk menambahkan kontak baru
 const addContactValidator = [
     //value itu value saat ini
     body("name").custom((value, { req }) => {
@@ -158,6 +164,8 @@ const addContactValidator = [
     check("email", "E-mail not valid").isEmail(),
     check("mobile", "Invalid mobile phone format,please use Indonesian format").isMobilePhone(region)
 ]
+
+//route untuk menambahkan kontak baru
 app.post('/addContact', addContactValidator, (req, res) => {
     let contacts = loadContact();
     let successMessage = "";
@@ -179,6 +187,7 @@ app.post('/addContact', addContactValidator, (req, res) => {
     }
 })
 
+//validator untuk update kontak
 const updateContactValidator = [
     //value itu value saat ini
     body("newName").custom((value, { req }) => {
@@ -204,6 +213,8 @@ const updateContactValidator = [
     //https://stackoverflow.com/a/47086674
     check("mobile", "Invalid mobile phone format, please use Indonesian format").optional().isMobilePhone(region)
 ]
+
+//route untuk update kontak
 app.post('/updateContact', updateContactValidator, (req, res) => {
     //baca semua kontak
     let contacts = loadContact();
