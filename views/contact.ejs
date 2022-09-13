@@ -39,6 +39,16 @@
                       <%= successMessage  %> 
                   </div>
                   <% } %>
+                  <% if (errorMessages.length>0) { %>
+                    <div class="alert alert-danger" role="alert">
+                      <h5>Whoops!</h5>
+                      <ol>
+                    <% errorMessages.forEach(emsg => { %>
+                      <li><%= emsg.msg %> </li>
+                    <% }) %>
+                      </ol>
+                    </div>
+                  <% } %>
                     <% if (contacts.length < 1) { %>
                         <div class="alert alert-danger" role="alert">
                             Contacts is empty!
