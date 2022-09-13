@@ -201,6 +201,7 @@ const updateContactValidator = [
     }),
     //lakukan validasi jika dan hanya jika field 'mobile' nya diisi
     //kalo mobile nya kosong, yaudah gak usah divalidasi, artinya pengguna ga mau ngubah mobile nya.
+    //https://stackoverflow.com/a/47086674
     check("mobile", "Invalid mobile phone format, please use Indonesian format").optional().isMobilePhone(region)
 ]
 app.post('/updateContact', updateContactValidator, (req, res) => {
