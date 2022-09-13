@@ -201,9 +201,9 @@ const updateContactValidator = [
         return true;
     }),
     body("newEmail").custom((value, { req }) => {
-        if(!value){
+        if (!value) {
             return true;
-        }else if (!isEmail(value)) {
+        } else if (!isEmail(value)) {
             throw "Invalid Email format!";
         }
         return true;
@@ -226,13 +226,25 @@ app.post('/updateContact', updateContactValidator, (req, res) => {
     if (errorMessages.length > 0) {
         res.render(__dirname + '/views/contact.ejs', { contacts, successMessage, errorMessages });
         return;
+    } else {
+        //kalau tidak ada yang diisi, tampilkan error
+        if (!req.body.newName && !req.body.newMobile && !req.body.newEmail) {
+            errorMessages.push({
+                'value': undefined,
+                'msg': 'Please fill your new name or email or mobile!',
+                'param': ['newName', 'newMobile', 'newEmail'],
+                'location': 'function'
+            })
+            res.render(__dirname + '/views/contact.ejs', { contacts, successMessage, errorMessages });
+            return;
+        } else {
+            const success = updateContact(contacts, req.body);
+            if (success) {
+                successMessage = "Contact has been successfully updated!"
+            }
+            res.render(__dirname + '/views/contact.ejs', { contacts, successMessage, errorMessages });
+        }
     }
-    const success = updateContact(contacts, req.body);
-
-    if (success) {
-        successMessage = "Contact has been successfully updated!"
-    }
-    res.render(__dirname + '/views/contact.ejs', { contacts, successMessage, errorMessages });
 })
 
 //TODO: modifikasi supaya loadContact() nya cuma sekali doang
